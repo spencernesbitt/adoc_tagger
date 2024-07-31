@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tagger.core", "tagger.core\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tagger.unit_test", "tagger.unit_test\tagger.unit_test.csproj", "{07CB03D5-A414-4609-BAA6-23C3CD873F62}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tagger", "tagger.program\tagger.csproj", "{3BAFAECB-1D85-47F3-AE2E-BB6E2D42EFD4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{07CB03D5-A414-4609-BAA6-23C3CD873F62}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07CB03D5-A414-4609-BAA6-23C3CD873F62}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07CB03D5-A414-4609-BAA6-23C3CD873F62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BAFAECB-1D85-47F3-AE2E-BB6E2D42EFD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BAFAECB-1D85-47F3-AE2E-BB6E2D42EFD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BAFAECB-1D85-47F3-AE2E-BB6E2D42EFD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BAFAECB-1D85-47F3-AE2E-BB6E2D42EFD4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
