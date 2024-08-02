@@ -57,7 +57,7 @@ public class CrossReference
         return this.linkUrl.GetHashCode();
     }
 
-    public override bool Equals(Object o) {
+    public override bool Equals(Object? o) {
         if (!(o is CrossReference)) return false;
         CrossReference cr = (CrossReference)o;
         return cr.LinkUrl.Equals(this.linkUrl);
