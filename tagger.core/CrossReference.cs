@@ -14,7 +14,7 @@ public class CrossReference
      
     public CrossReference(string linkUrl)
     {
-        this.linkUrl = linkUrl;
+        this.linkUrl = linkUrl.Replace('\\', '/');
         this.linkRegEx = new Regex(@"^(.+\/|.+\\)?(.+?)(?=\.?adoc|tags)");
     }
 

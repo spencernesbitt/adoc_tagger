@@ -66,9 +66,7 @@ public class TagUtils
     {       
         // Xref the tag index file to the tags file for the file being tagged (Links back to all files that reference the same tag)
         var tagsFilePath = this.GetTagsIncludeFilePath(noteFilePath: noteFilePath); // ./some_interesting_note.tags
-        Console.WriteLine($"tagsFilePath: {tagsFilePath}");
         var tagIndexFilePath = this.GetTagIndexFilePath(noteFilePath:noteFilePath, tag: tag); // ./Tags/some_tag.adoc
-        Console.WriteLine($"tagIndexFilePath: {tagIndexFilePath}");
 
         // Updates the ./some_interesting_note.tags file with the new tag
         await UpdateFileCrossReferences(fileToUpdate: tagsFilePath, fileToReference: tagIndexFilePath, templateType: IncludeTemplateType.Sidebar);
@@ -77,11 +75,11 @@ public class TagUtils
         await IncludeTagsFileInNoteFile(noteFilePath: noteFilePath, tagsFilePath: tagsFilePath);
 
         // Updates the ./Tags/{tag_file}.adoc file with a xref to the note file being tagged
-        await UpdateFileCrossReferences(fileToUpdate: tagIndexFilePath, fileToReference: noteFilePath, templateType: IncludeTemplateType.None);
+        await UpdateFileCrossReferences(fileToUpdate: tagIndexFilePath, fileToReference: noteFilePath, templateType: IncludeTemplateType.None, asList: true);
         
         // Xref the tag index file in the global Tags file (shoes the tag in the list of all tags) 
         var globalTagIndexPath = "_tag_index.adoc";
-        await UpdateFileCrossReferences(fileToUpdate: globalTagIndexPath, fileToReference: tagIndexFilePath, templateType: IncludeTemplateType.None);
+        await UpdateFileCrossReferences(fileToUpdate: globalTagIndexPath, fileToReference: tagIndexFilePath, templateType: IncludeTemplateType.None, asList: true);
     }
 
     /// <summary>
@@ -94,14 +92,11 @@ public class TagUtils
     {
         var absNoteFilePath = GetAbsolutePath(noteFilePath);
         var directory = new FileInfo(absNoteFilePath).Directory.FullName;
-        Console.WriteLine($"GetTagIndexFilePath - note file Directory: {directory}");
-        var relativeTagPath = $"./Tags/{GetTagFileNameFromTag(tag)}.adoc";
+        var relativeTagPath = $"./Tags/tag_{GetTagFileNameFromTag(tag)}.adoc";
         var newPath = this.fileSystem.Path.GetFullPath(this.fileSystem.Path.Combine(directory, relativeTagPath));
         // Create the folder if it does not already exist
-        //var file = new FileInfo(newPath);
-        this.fileSystem.Directory.CreateDirectory(newPath);
-        //file.Directory.Create(); // If the directory already exists, this method does nothing.                
-        Console.WriteLine($"GetTagIndexFilePath - new path: {newPath}");
+        var file = new FileInfo(newPath);
+        this.fileSystem.Directory.CreateDirectory(file.DirectoryName);
         return newPath;
     }            
 
@@ -125,7 +120,7 @@ public class TagUtils
         var includeExists = await FileContainsLine(filePath: absNoteFilePath, line: includeText);
         if (!includeExists)
         {
-            await this.fileSystem.File.AppendAllTextAsync(absNoteFilePath, includeText);
+            await this.fileSystem.File.AppendAllTextAsync(absNoteFilePath, $"{Environment.NewLine}{Environment.NewLine}{includeText}");
         }
     }
 
@@ -135,17 +130,15 @@ public class TagUtils
     /// <param name="fileToUpdate">Absolute or Relative path to file being updated</param>
     /// <param name="fileToReference">Absolute or Relative path to file being refrenced</param>
     /// <returns></returns>
-    public async Task UpdateFileCrossReferences(string fileToUpdate, string fileToReference, IncludeTemplateType templateType)
+    public async Task UpdateFileCrossReferences(string fileToUpdate, string fileToReference, IncludeTemplateType templateType, bool asList = false)
     {       
-        Console.WriteLine($"UpdateFileCrossReferences - fileToUpdate: {fileToUpdate}");
         var absFileToUpdatePath = GetAbsolutePath(fileToUpdate);
-        Console.WriteLine($"UpdateFileCrossReferences - absFileToUpdatePath: {absFileToUpdatePath}");
         // Build a list of existing notes and replace all content with the updated list in alphabetical order
         var crossReferences = (await GetXrefsFromFileAsync(absFileToUpdatePath)).ToHashSet();
         var newXref =  GetFileXReference(fromFilePath: absFileToUpdatePath, toFilePath: fileToReference);
         //Using a hashset, so adding an existing item does nothing
         crossReferences.Add(newXref);
-        await this.WriteXrefsToFile(filePath: absFileToUpdatePath, xrefs: crossReferences, templateType: templateType);
+        await this.WriteXrefsToFile(filePath: absFileToUpdatePath, xrefs: crossReferences, templateType: templateType, asList: asList);
     }
 
     /// <summary>
@@ -155,7 +148,7 @@ public class TagUtils
     /// </summary>
     /// <param name="filePath">Absolute or relative path to the file</param>
     /// <param name="xref"></param>
-    public async Task WriteXrefsToFile(string filePath, IEnumerable<CrossReference> xrefs, IncludeTemplateType templateType)
+    public async Task WriteXrefsToFile(string filePath, IEnumerable<CrossReference> xrefs, IncludeTemplateType templateType, bool asList = false)
     {
         var absPath = GetAbsolutePath(path: filePath);
         
@@ -163,12 +156,25 @@ public class TagUtils
         var xrefsBuilder = new StringBuilder();
         
         var sortedXrefs = xrefs.OrderBy(xref => xref.CanonicalName);
-        foreach (var xref in sortedXrefs)
+        var xrefCount = sortedXrefs.Count();
+        for (var i=0; i<xrefCount; i++)
         {
-            xrefsBuilder.AppendLine($"* {xref.ToString()}");
+            var xref = sortedXrefs.ElementAt(i); 
+            var bulletChar = asList? "* " : ""; 
+            var xrefString = $"{bulletChar}{xref.ToString()}";          
+            if (i < (xrefCount - 1))
+            { 
+                xrefsBuilder.AppendLine(xrefString);
+            }
+            else
+            {
+                 xrefsBuilder.Append(xrefString);
+            }
         }
-        this.fileSystem.File.CreateText(absPath);
-        string textToWrite;
+
+        this.fileSystem.File.Create(absPath).Close();        
+        string textToWrite;        
+       
         if (!string.IsNullOrWhiteSpace(template.Template))
         {
             textToWrite = template.Template.Replace(template.ReplaceMarker, xrefsBuilder.ToString()); 
@@ -183,7 +189,6 @@ public class TagUtils
 
     public string GetAbsolutePath (string path)
     {
-        Console.WriteLine($"GetAbsolutePath checking path: {path}");
         if (!this.fileSystem.Path.IsPathRooted(path))
         {
             var basePath = GetExecutionPath();
@@ -198,11 +203,8 @@ public class TagUtils
         {
             return this.workingPath;
         }
-        string path = string.Empty;
-        var baseExecutionPath = Assembly.GetExecutingAssembly().Location;
-        var baseDirectory = Directory.GetParent(baseExecutionPath);
-        path = baseDirectory?.FullName?? string.Empty;
-        return path;
+        
+        return Environment.CurrentDirectory;               
     }
 
     /// <summary>
@@ -244,7 +246,7 @@ public class TagUtils
         {
             throw new InvalidOperationException("The file name bust end in '.adoc'");
         }
-        return noteFilePath.Replace(".adoc", ".tags");
+        return noteFilePath.Replace(".adoc", "__tags.adoc");
     }
 
     /// <summary>
@@ -269,7 +271,6 @@ public class TagUtils
         var relativeFile = Path.Combine(relativeDir, new FileInfo(toPath).Name); 
         return relativeFile;
     }
-
 
     /// <summary>
     /// Checks a file for a matching line of text
