@@ -1,0 +1,28 @@
+= Configuration for tagger
+:source-highlighter: highlight.js
+
+== What are we trying to achieve from the configuration?
+
+. We need to know wher we should put or find stuff:
+.. The stuff:
+*** The Overall Tag index file
++
+This this the main index for the tags and includes links to all the tag files.
+*** The Tag files
++
+By default, these will be placed in the same folder as the .adoc file but we might want to make this configurable
+*** Probably the templates for the tag inserts etc.
+*** Casing
+**** camel
+**** snake
+**** kebab
+**** etc.
+
+
+== Example config file
+
+[source, json]
+.tagger-conf.json
+{
+    "tagindex": "./tag-index.adoc", // the index file is in the same folder as ths config
+}

@@ -1,0 +1,9 @@
+@startuml tagger-architecture
+title Tagging Architecture
+(my-note.adoc) -> [my-note__tags.adoc]
+[my-note__tags.adoc] -d-> [Tags/<tagname1>.adoc]
+[my-note__tags.adoc] -d-> [Tags/<tagname2>.adoc]
+[tag-index.adoc] -u-> [Tags/<tagname1>.adoc]
+[tag-index.adoc] -u-> [Tags/<tagname2>.adoc]
+(my-other-note.adoc) -l-> [my-other-note__tags.adoc]
+@enduml
