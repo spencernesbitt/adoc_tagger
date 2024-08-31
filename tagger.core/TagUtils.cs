@@ -244,7 +244,7 @@ public class TagUtils
     {
         if (!noteFilePath.EndsWith(".adoc"))
         {
-            throw new InvalidOperationException("The file name bust end in '.adoc'");
+            throw new InvalidOperationException("The file name must end in '.adoc'");
         }
         return noteFilePath.Replace(".adoc", "__tags.adoc");
     }
@@ -269,6 +269,8 @@ public class TagUtils
         var toDir = new FileInfo(toPath).Directory.FullName;
         var relativeDir = Path.GetRelativePath(fromDir, toDir);
         var relativeFile = Path.Combine(relativeDir, new FileInfo(toPath).Name); 
+        // make the path linux compatible
+        relativeFile = relativeFile.Replace('\\', '/');
         return relativeFile;
     }
 

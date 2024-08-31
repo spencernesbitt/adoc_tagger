@@ -15,6 +15,7 @@ public class CrossReference
     public CrossReference(string linkUrl)
     {
         this.linkUrl = linkUrl.Replace('\\', '/');
+        // Regular expression to detect a string ending in .adoc or .tags and pick out the filename
         this.linkRegEx = new Regex(@"^(.+\/|.+\\)?(.+?)(?=\.?adoc|tags)");
     }
 

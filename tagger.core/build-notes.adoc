@@ -1,0 +1,4 @@
+= Build Notes
+
+== Publish w/o debug symbols
+dotnet publish /p:DebugType=None /p:DebugSymbols=false
